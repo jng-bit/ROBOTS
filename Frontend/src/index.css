@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #FF6A00;
+  --color-dark-1: #0A0A0A;
+  --color-dark-2: #141414;
+  
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+}
+
+:root {
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #141414;
+  --text-main: #FFFFFF;
+  --text-muted: #9CA3AF;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --card-shadow: 0 4px 30px rgba(0,0,0,0.5);
+}
+
+:root.light {
+  --bg-primary: #F8F9FA;
+  --bg-secondary: #FFFFFF;
+  --text-main: #0A0A0A;
+  --text-muted: #6B7280;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --card-shadow: 0 4px 30px rgba(0,0,0,0.05);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-smoothing: grayscale;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+/* Hide default cursor on interactive elements */
+a, button, input, select, textarea, .cursor-pointer {
+  cursor: none !important;
+}
