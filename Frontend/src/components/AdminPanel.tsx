@@ -122,7 +122,8 @@ export default function AdminPanel() {
     warranty: '2 Year Warranty',
     deliveryInfo: 'Express Delivery',
     colors: ['Red', 'White', 'Black'] as string[],
-    specs: [] as { key: string, value: string }[]
+    specs: [] as { key: string, value: string }[],
+    existingImages: [] as string[]
   });
   const [productImages, setProductImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -473,7 +474,8 @@ export default function AdminPanel() {
       featured: product.featured || false,
       warranty: product.warranty || '2 Year Warranty',
       deliveryInfo: product.deliveryInfo || 'Express Delivery',
-      colors: product.colors || ['Red', 'White', 'Black']
+      colors: product.colors || ['Red', 'White', 'Black'],
+      existingImages: product.images || []
     });
     setProductImages([]);
     setIsProductModalOpen(true);
@@ -493,7 +495,8 @@ export default function AdminPanel() {
       warranty: '2 Year Warranty',
       deliveryInfo: 'Express Delivery',
       colors: ['Red', 'White', 'Black'],
-      specs: []
+      specs: [],
+      existingImages: []
     });
     setProductImages([]);
     setCurrentStep(1);
@@ -1133,10 +1136,20 @@ export default function AdminPanel() {
                         </label>
                       </div>
                       <div className="grid grid-cols-4 gap-4">
+                        {/* Stored Images */}
+                        {productForm.existingImages?.map((url, i) => (
+                          <div key={`existing-${i}`} className="aspect-square relative rounded-xl overflow-hidden border border-slate-200 opacity-60">
+                            <img src={url} className="w-full h-full object-cover grayscale-[0.5]" />
+                            <div className="absolute inset-0 bg-slate-900/20 flex items-center justify-center">
+                              <span className="text-[8px] font-black text-white uppercase bg-slate-900/40 px-2 py-1 rounded">Stored</span>
+                            </div>
+                          </div>
+                        ))}
+                        {/* New Uploads */}
                         {productImages.map((file, i) => (
-                          <div key={i} className="aspect-square relative rounded-xl overflow-hidden border border-slate-100">
+                          <div key={`new-${i}`} className="aspect-square relative rounded-xl overflow-hidden border border-primary/20 ring-2 ring-primary/10">
                             <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" />
-                            <button onClick={() => removeImage(i)} className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-slate-900 hover:text-red-500"><X size={12} /></button>
+                            <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-slate-900 hover:text-red-500"><X size={12} /></button>
                           </div>
                         ))}
                       </div>
@@ -1241,7 +1254,7 @@ export default function AdminPanel() {
                 </button>
                 <button 
                   onClick={currentStep < 4 ? () => setCurrentStep(prev => prev + 1) : handleProductSubmit}
-                  disabled={isSubmitting || (currentStep === 3 && productImages.length < 3)}
+                  disabled={isSubmitting || (currentStep === 3 && !editingProductId && productImages.length < 3)}
                   className="px-8 py-2.5 bg-slate-900 text-white rounded-xl text-[13px] font-bold hover:bg-primary transition-all shadow-md flex items-center gap-2"
                 >
                   {isSubmitting ? <RefreshCcw className="animate-spin" size={16} /> : (currentStep === 4 ? <CheckCircle2 size={16} /> : null)}
