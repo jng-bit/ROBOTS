@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Menu, Sun, Moon, ChevronDown, ChevronRight, X, LogOut, Settings, User as UserIcon, Bell, Ticket, MoreVertical } from 'lucide-react';
+import { ShoppingCart, Menu, Sun, Moon, ChevronDown, ChevronRight, X, LogOut, Settings, User as UserIcon, Bell, Ticket } from 'lucide-react';
 import logo from '../assets/logo.png';
 import AuthModal from './AuthModal';
 import CartDrawer from './CartDrawer';
@@ -11,6 +11,7 @@ import robotsImg from '../assets/Robots.jpg';
 import collegeProjectsImg from '../assets/College-Projects.jpg';
 import customBuildsImg from '../assets/Custom Builds.jpg';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 interface NavbarProps {
   cartItems: any[];
@@ -26,7 +27,7 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false); // Default to Light Mode
+  const [isDark, setIsDark] = useState(false);
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -39,7 +40,7 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
     if (!user) return;
     try {
       const token = localStorage.getItem('insforgeToken');
-      const res = await fetch('http://localhost:5000/api/notifications', {
+      const res = await fetch(`${API_URL}/api/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -56,7 +57,7 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
   const markNotificationAsRead = async (id: string) => {
     try {
       const token = localStorage.getItem('insforgeToken');
-      await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+      await fetch(`${API_URL}/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -65,10 +66,6 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
-  
-  useEffect(() => {
-    if (user) console.log('Current User in Navbar:', user);
-  }, [user]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -99,27 +96,9 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
 
   const [dynamic3DProducts, setDynamic3DProducts] = useState<any[]>([]);
 
-  interface NavLink {
-    name: string;
-    href?: string;
-    hasDropdown?: boolean;
-  }
-
-  const navLinks: NavLink[] = [
-    { name: 'Products', hasDropdown: true },
-    ...(dynamic3DProducts.length > 0 ? [{ name: '3D Solutions', hasDropdown: true }] : []),
-    { name: 'Services', hasDropdown: true },
-    { name: 'Contact', href: '#' },
-  ];
-
-  // Add Admin Link if user is admin
-  if (user?.role === 'admin') {
-    navLinks.push({ name: 'Admin Panel', href: '#', hasDropdown: false });
-  }
-
   const fetch3D = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/products');
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       if (res.ok) {
         const filtered = data.filter((p: any) => {
@@ -129,8 +108,8 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
         setDynamic3DProducts(filtered.map((p: any) => ({
           name: p.name,
           image: p.images?.[0] || '',
-          view: 'product-detail', // Use product detail view
-          product: p, // Pass the whole product object
+          view: 'product-detail',
+          product: p,
           category: typeof p.category === 'object' ? p.category.name : p.category
         })));
       }
@@ -177,6 +156,17 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
     ]
   };
 
+  const navLinks: { name: string; href?: string; hasDropdown?: boolean }[] = [
+    { name: 'Products', hasDropdown: true },
+    ...(dynamic3DProducts.length > 0 ? [{ name: '3D Solutions', hasDropdown: true }] : []),
+    { name: 'Services', hasDropdown: true },
+    { name: 'Contact', href: '#' },
+  ];
+
+  if (user?.role === 'admin') {
+    navLinks.push({ name: 'Admin Panel', href: '#', hasDropdown: false });
+  }
+
   return (
     <>
       <motion.nav 
@@ -199,7 +189,7 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
             onClick={() => {
               setCurrentView('home');
               setActiveCategory(null);
-              setActiveItem(null);
+              setSelectedProduct(null);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           >
@@ -219,9 +209,6 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                   if (item.name === 'Contact') {
                     setCurrentView('contact');
                     setActiveItem('Contact');
-                  } else if (item.name === 'Track Order') {
-                    setCurrentView('track-order');
-                    setActiveItem('Track Order');
                   } else if (item.name === 'Admin Panel') {
                     setCurrentView('admin');
                     setActiveItem('Admin Panel');
@@ -259,12 +246,6 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                               <ChevronRight size={12} className="opacity-0 group-hover/link:opacity-100 transition-opacity" />
                             </div>
                           ))}
-                          <div className="pt-6 mt-6 border-t border-[var(--border-subtle)]">
-                            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
-                              <p className="text-[10px] font-bold text-[var(--text-main)]">Special Offer!</p>
-                              <p className="text-[9px] text-[var(--text-muted)]">Get 15% off on your first custom build.</p>
-                            </div>
-                          </div>
                         </div>
                         
                         <div className="flex-1 p-8 bg-[var(--bg-primary)]/80">
@@ -276,15 +257,23 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                                   setCurrentView(subItem.view);
                                   if (subItem.category) setActiveCategory(subItem.category);
                                   if (subItem.product) setSelectedProduct(subItem.product);
-                                  setActiveItem(item.name);
                                   setHoveredLink(null);
                                 }}
-                                className="group/item cursor-pointer text-center"
+                                className="group/card cursor-pointer"
                               >
-                                <div className="aspect-square rounded-2xl bg-[var(--bg-secondary)] overflow-hidden mb-3 border border-[var(--border-subtle)] shadow-sm">
-                                  <img src={subItem.image} className="w-full h-full object-cover transition-transform duration-500 group-hover/item:scale-110" />
+                                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3 bg-[var(--bg-secondary)]">
+                                  <img 
+                                    src={subItem.image} 
+                                    alt={subItem.name}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
+                                  />
+                                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center">
+                                    <ChevronRight className="text-white" size={24} />
+                                  </div>
                                 </div>
-                                <p className="text-[10px] font-bold text-[var(--text-main)] group-hover/item:text-primary transition-colors uppercase tracking-wider">{subItem.name}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)] group-hover/card:text-primary transition-colors">
+                                  {subItem.name}
+                                </p>
                               </div>
                             ))}
                           </div>
@@ -297,264 +286,133 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
             ))}
           </ul>
 
-          <div className="relative z-10 flex items-center gap-2 sm:gap-4 text-[var(--text-main)]">
-            {/* Desktop Actions */}
-            <div className="hidden lg:flex items-center gap-4">
-              <button 
-                onClick={() => setIsDark(!isDark)}
-                className="p-2 hover:bg-[var(--text-main)]/10 rounded-full transition-all duration-300 relative overflow-hidden"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={isDark ? 'dark' : 'light'}
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -10, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {isDark ? <Moon size={20} className="text-blue-400" /> : <Sun size={20} className="text-orange-500" />}
-                  </motion.div>
-                </AnimatePresence>
-              </button>
+          <div className="flex items-center gap-2 sm:gap-4 relative z-10">
+            <button 
+              onClick={() => setIsDark(!isDark)}
+              className="p-2 sm:p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] text-[var(--text-main)] hover:text-primary transition-all active:scale-95"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
-              {user && (
-                <div className="relative">
-                  <button 
-                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                    className="p-2 hover:bg-[var(--text-main)]/10 rounded-full transition-colors group"
-                  >
-                    <Bell size={20} className="text-[var(--text-muted)] group-hover:text-primary transition-colors" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-[var(--bg-primary)] flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-
-                  <AnimatePresence>
-                    {isNotificationsOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-4 w-80 bg-[var(--bg-secondary)] backdrop-blur-xl border border-[var(--border-subtle)] rounded-3xl shadow-2xl overflow-hidden z-50 flex flex-col max-h-[400px]"
-                      >
-                        <div className="p-4 border-b border-[var(--border-subtle)] flex items-center justify-between bg-[var(--bg-primary)]/50">
-                          <p className="text-[10px] font-black text-[var(--text-main)] uppercase tracking-widest">Notifications</p>
-                          {unreadCount > 0 && <span className="text-[10px] font-bold text-primary">{unreadCount} New</span>}
-                        </div>
-                        
-                        <div className="overflow-y-auto flex-1 py-2 custom-scrollbar">
-                          {notifications.length === 0 ? (
-                            <div className="p-8 text-center">
-                              <p className="text-xs text-[var(--text-muted)]">No notifications yet</p>
-                            </div>
-                          ) : (
-                            notifications.map((notif) => (
-                              <div 
-                                key={notif._id} 
-                                onClick={() => { markNotificationAsRead(notif._id); if (notif.type === 'coupon') setCurrentView('profile'); }}
-                                className={`p-4 hover:bg-[var(--text-main)]/5 transition-all cursor-pointer border-b border-[var(--border-subtle)] last:border-0 ${!notif.isRead ? 'bg-primary/5' : ''}`}
-                              >
-                                <div className="flex gap-3">
-                                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${notif.type === 'coupon' ? 'bg-orange-500/20 text-orange-500' : 'bg-primary/20 text-primary'}`}>
-                                    {notif.type === 'coupon' ? <Ticket size={14} /> : <Bell size={14} />}
-                                  </div>
-                                  <div className="flex-1 text-left">
-                                    <p className="text-[11px] font-bold text-[var(--text-main)] mb-1">{notif.title}</p>
-                                    <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">{notif.message}</p>
-                                    <p className="text-[9px] text-[var(--text-muted)] mt-2 font-medium">{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                  </div>
-                                  {!notif.isRead && <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1" />}
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+            <button 
+              className="p-2 sm:p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] text-[var(--text-main)] hover:text-primary transition-all active:scale-95 relative"
+              onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); setIsProfileOpen(false); }}
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(255,106,0,0.8)]" />
               )}
+            </button>
 
-              <button 
-                onClick={() => setIsCartOpen(true)}
-                className="relative p-2 hover:bg-[var(--text-main)]/10 rounded-full transition-colors group"
-              >
-                <ShoppingCart size={20} className="text-[var(--text-muted)] group-hover:text-primary transition-colors" />
-                {cartItems.length > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full border-2 border-[var(--bg-primary)] flex items-center justify-center">
-                    {cartItems.length}
-                  </span>
-                )}
-              </button>
-
-              {user ? (
-                <div className="relative">
-                  <button 
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center bg-[var(--text-main)]/5 hover:bg-[var(--text-main)]/10 border border-[var(--border-subtle)] p-1 rounded-full transition-all duration-300 group shadow-lg shadow-black/10"
-                  >
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-r from-primary to-orange-500 flex items-center justify-center text-white font-bold text-xs overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 transition-all">
-                      {user.avatar ? (
-                        <img src={user.avatar} className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{user.name?.charAt(0) || user.email?.charAt(0) || 'U'}</span>
-                      )}
-                    </div>
-                  </button>
-
-                  <AnimatePresence>
-                    {isProfileOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-2 w-48 bg-[var(--bg-secondary)] backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl shadow-2xl overflow-hidden z-50 p-2"
-                      >
-                        <button 
-                          onClick={() => { setCurrentView('profile'); setIsProfileOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] hover:bg-primary/10 hover:text-primary rounded-xl transition-all"
-                        >
-                          <UserIcon size={16} />
-                          My Profile
-                        </button>
-                        
-                        {user.role === 'admin' && (
-                          <button 
-                            onClick={() => { setCurrentView('admin'); setIsProfileOpen(false); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-[var(--text-main)] hover:bg-primary/10 hover:text-primary rounded-xl transition-all"
-                          >
-                            <Settings size={16} />
-                            Admin Dashboard
-                          </button>
-                        )}
-                        <div className="h-[1px] bg-[var(--border-subtle)] my-1 mx-2" />
-                        <button 
-                          onClick={() => { logout(); setIsProfileOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                        >
-                          <LogOut size={16} />
-                          Sign Out
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <button 
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="ml-2 relative overflow-hidden group bg-[var(--text-main)]/5 hover:bg-[var(--text-main)]/10 border border-[var(--border-subtle)] px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300"
-                >
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/80 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="relative z-10 group-hover:text-white text-[var(--text-main)] transition-colors duration-300">Sign In</span>
-                </button>
+            <button 
+              onClick={() => { setIsCartOpen(true); setIsProfileOpen(false); }}
+              className="p-2 sm:p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] text-[var(--text-main)] hover:text-primary transition-all active:scale-95 relative"
+            >
+              <ShoppingCart size={18} />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-black w-5 h-5 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
+                  {cartItems.length}
+                </span>
               )}
-            </div>
+            </button>
 
-            {/* Mobile Actions Overlay/Menu Trigger */}
-            <div className="flex lg:hidden items-center gap-2">
+            {user ? (
               <div className="relative">
                 <button 
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="p-2 text-[var(--text-muted)] hover:text-primary transition-colors"
+                  onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotificationsOpen(false); }}
+                  className={`flex items-center gap-2 p-1 pr-3 rounded-xl bg-[var(--bg-secondary)]/50 border transition-all active:scale-95 ${isProfileOpen ? 'border-primary' : 'border-[var(--border-subtle)]'}`}
                 >
-                  <MoreVertical size={24} />
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center text-white font-bold text-sm shadow-inner overflow-hidden">
+                    {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : user.name?.[0]}
+                  </div>
+                  <span className="hidden md:block text-xs font-bold text-[var(--text-main)]">{user.name?.split(' ')[0]}</span>
                 </button>
-                
+
                 <AnimatePresence>
                   {isProfileOpen && (
-                    <motion.div
+                    <motion.div 
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-4 w-64 bg-[var(--bg-secondary)] backdrop-blur-xl border border-[var(--border-subtle)] rounded-3xl shadow-2xl overflow-hidden z-50 p-4 space-y-4"
+                      className="absolute top-full right-0 mt-2 w-64 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl"
                     >
-                      <div className="grid grid-cols-2 gap-3">
-                        <button 
-                          onClick={() => setIsDark(!isDark)}
-                          className="flex flex-col items-center justify-center p-4 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl hover:border-primary transition-all"
-                        >
-                          {isDark ? <Moon size={20} className="text-blue-400 mb-2" /> : <Sun size={20} className="text-orange-500 mb-2" />}
-                          <span className="text-[10px] font-bold uppercase tracking-widest">{isDark ? 'Dark' : 'Light'}</span>
-                        </button>
-                        
-                        <button 
-                          onClick={() => { setIsCartOpen(true); setIsProfileOpen(false); }}
-                          className="flex flex-col items-center justify-center p-4 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl hover:border-primary transition-all relative"
-                        >
-                          <ShoppingCart size={20} className="text-[var(--text-muted)] mb-2" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest">Cart</span>
-                          {cartItems.length > 0 && (
-                            <span className="absolute top-2 right-2 w-4 h-4 bg-primary text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                              {cartItems.length}
-                            </span>
-                          )}
-                        </button>
-
-                        {user && (
-                          <>
-                            <button 
-                              onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); setIsProfileOpen(false); }}
-                              className="flex flex-col items-center justify-center p-4 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl hover:border-primary transition-all relative"
-                            >
-                              <Bell size={20} className="text-[var(--text-muted)] mb-2" />
-                              <span className="text-[10px] font-bold uppercase tracking-widest">Alerts</span>
-                              {unreadCount > 0 && (
-                                <span className="absolute top-2 right-2 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                                  {unreadCount}
-                                </span>
-                              )}
-                            </button>
-                            <button 
-                              onClick={() => { setCurrentView('profile'); setIsProfileOpen(false); }}
-                              className="flex flex-col items-center justify-center p-4 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl hover:border-primary transition-all"
-                            >
-                              <UserIcon size={20} className="text-[var(--text-muted)] mb-2" />
-                              <span className="text-[10px] font-bold uppercase tracking-widest">Profile</span>
-                            </button>
-                          </>
-                        )}
+                      <div className="p-4 border-b border-[var(--border-subtle)] bg-[var(--bg-secondary)]/50">
+                        <p className="text-xs font-black text-primary uppercase tracking-widest mb-1">Authenticated</p>
+                        <p className="text-sm font-bold text-[var(--text-main)] truncate">{user.email}</p>
                       </div>
-
-                      {user?.role === 'admin' && (
+                      <div className="p-2">
                         <button 
-                          onClick={() => { setCurrentView('admin'); setIsProfileOpen(false); }}
-                          className="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg"
+                          onClick={() => { setCurrentView('profile'); setIsProfileOpen(false); }}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold text-[var(--text-main)] hover:bg-[var(--bg-secondary)] transition-colors"
                         >
-                          <Settings size={14} /> Admin Dashboard
+                          <UserIcon size={16} className="text-primary" /> Profile Settings
                         </button>
-                      )}
-
-                      {user ? (
+                        <button 
+                          className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold text-[var(--text-main)] hover:bg-[var(--bg-secondary)] transition-colors"
+                          onClick={() => { setCurrentView('track-order'); setIsProfileOpen(false); }}
+                        >
+                          <Ticket size={16} className="text-primary" /> My Orders
+                        </button>
+                        <div className="h-px bg-[var(--border-subtle)] my-2" />
                         <button 
                           onClick={() => { logout(); setIsProfileOpen(false); }}
-                          className="w-full py-3 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-red-500/20"
+                          className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-500/10 transition-colors"
                         >
-                          Sign Out
+                          <LogOut size={16} /> Sign Out
                         </button>
-                      ) : (
-                        <button 
-                          onClick={() => { setIsAuthModalOpen(true); setIsProfileOpen(false); }}
-                          className="w-full py-3 bg-primary text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20"
-                        >
-                          Sign In
-                        </button>
-                      )}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-
+            ) : (
               <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 hover:bg-[var(--text-main)]/10 rounded-full transition-colors relative z-[60]"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
               >
-                {isMobileMenuOpen ? <X size={24} className="text-primary" /> : <Menu size={24} className="text-[var(--text-muted)]" />}
+                Access
               </button>
-            </div>
+            )}
+
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 sm:p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] text-[var(--text-main)]"
+            >
+              <Menu size={18} />
+            </button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {isNotificationsOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute top-full right-8 mt-2 w-80 max-h-[400px] overflow-y-auto bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl z-[60]"
+            >
+              <div className="p-4 border-b border-[var(--border-subtle)] flex justify-between items-center">
+                <h3 className="font-bold text-sm">Notifications</h3>
+                <button className="text-[10px] text-primary font-bold uppercase">Clear All</button>
+              </div>
+              <div className="divide-y divide-[var(--border-subtle)]">
+                {notifications.length > 0 ? notifications.map((notif: any) => (
+                  <div 
+                    key={notif._id} 
+                    className={`p-4 hover:bg-[var(--bg-secondary)] cursor-pointer transition-colors ${!notif.isRead ? 'bg-primary/5' : ''}`}
+                    onClick={() => markNotificationAsRead(notif._id)}
+                  >
+                    <p className="text-xs font-bold mb-1">{notif.title}</p>
+                    <p className="text-[10px] text-[var(--text-muted)] line-clamp-2">{notif.message}</p>
+                    <p className="text-[8px] text-[var(--text-muted)] mt-2 uppercase">{new Date(notif.createdAt).toLocaleDateString()}</p>
+                  </div>
+                )) : (
+                  <div className="p-8 text-center text-[var(--text-muted)] text-xs">No new notifications</div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {isMobileMenuOpen && (
@@ -564,16 +422,23 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
               />
               <motion.div 
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="fixed top-0 right-0 h-full w-full max-w-xs bg-[var(--bg-primary)] border-l border-[var(--border-subtle)] z-[56] lg:hidden p-8 pt-24 space-y-8 shadow-2xl overflow-y-auto"
+                className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-[var(--bg-primary)] z-[100] shadow-2xl p-8 flex flex-col overflow-y-auto"
               >
-                <div className="space-y-2">
+                <div className="flex justify-between items-center mb-12">
+                  <img src={logo} alt="BISONIX" className="h-10 w-auto" />
+                  <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="flex-1">
                   <p className="text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-[0.2em] mb-4">Navigation</p>
                   {navLinks.map((item) => (
                     <div key={item.name}>
@@ -582,10 +447,6 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                           if (item.name === 'Contact') {
                             setCurrentView('contact');
                             setActiveItem('Contact');
-                            setIsMobileMenuOpen(false);
-                          } else if (item.name === 'Track Order') {
-                            setCurrentView('track-order');
-                            setActiveItem('Track Order');
                             setIsMobileMenuOpen(false);
                           } else if (item.hasDropdown) {
                             setActiveItem(activeItem === item.name ? null : item.name);
@@ -611,6 +472,7 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                               onClick={() => { 
                                 setCurrentView(subItem.view); 
                                 if (subItem.category) setActiveCategory(subItem.category);
+                                if (subItem.product) setSelectedProduct(subItem.product);
                                 setIsMobileMenuOpen(false); 
                               }}
                               className="w-full text-left py-2 text-sm font-bold text-[var(--text-muted)] hover:text-primary transition-colors flex justify-between items-center"
@@ -624,28 +486,28 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                     </div>
                   ))}
                 </div>
-                <div className="pt-8">
+
+                <div className="pt-8 space-y-4">
                   {user ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-center p-6 bg-[var(--text-main)]/5 rounded-3xl border border-[var(--border-subtle)]">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-r from-primary to-orange-500 flex items-center justify-center text-white font-bold text-2xl overflow-hidden shadow-2xl shadow-primary/20">
-                          {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <span>{user.name?.charAt(0) || 'U'}</span>}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-4 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-subtle)]">
+                        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20 overflow-hidden">
+                          {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : user.name?.[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[var(--text-main)]">{user.name}</p>
+                          <p className="text-[10px] text-[var(--text-muted)] uppercase font-black tracking-widest">{user.role}</p>
                         </div>
                       </div>
-                      
-                      {user.role === 'admin' && (
-                        <button 
-                          onClick={() => { setCurrentView('admin'); setIsMobileMenuOpen(false); }}
-                          className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg"
-                        >
-                          <Settings size={18} />
-                          Admin Dashboard
-                        </button>
-                      )}
-                      
+                      <button 
+                        onClick={() => { setCurrentView('profile'); setIsMobileMenuOpen(false); }}
+                        className="w-full flex items-center gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)] text-sm font-bold text-[var(--text-main)]"
+                      >
+                        <Settings size={18} className="text-primary" /> Profile Settings
+                      </button>
                       <button 
                         onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                        className="w-full bg-red-500/10 text-red-500 py-4 rounded-2xl font-bold border border-red-500/20"
+                        className="w-full py-4 rounded-2xl bg-red-500/10 text-red-500 font-bold text-sm"
                       >
                         Sign Out
                       </button>
@@ -672,7 +534,6 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cartItems={cartItems} setCartItems={setCartItems} setCurrentView={setCurrentView} />
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
-      {/* Floating WhatsApp Button */}
       <motion.a
         href="https://wa.me/7995232673"
         target="_blank"

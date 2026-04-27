@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import { insforge } from '../lib/insforge';
 
 interface User {
@@ -32,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       console.log('Fetching profile with token...');
-      const response = await fetch('http://localhost:5000/api/users/profile', {
+      const response = await fetch(`${API_URL}/api/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'x-user-name': additionalData?.name || '',
@@ -90,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             updatedAt: new Date().toISOString()
           };
         }
-        await fetch('http://localhost:5000/api/users/profile', {
+        await fetch(`${API_URL}/api/users/profile`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

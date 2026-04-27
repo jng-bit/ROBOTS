@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
@@ -45,8 +46,8 @@ export default function CategoryView({ category: initialCategory, onBack, onProd
       const token = localStorage.getItem('insforgeToken');
       const method = isWishlisted ? 'DELETE' : 'POST';
       const url = isWishlisted 
-        ? `http://localhost:5000/api/wishlist/${productId}` 
-        : 'http://localhost:5000/api/wishlist';
+        ? `${API_URL}/api/wishlist/${productId}`
+        : `${API_URL}/api/wishlist`;
 
       const response = await fetch(url, {
         method,
@@ -81,7 +82,7 @@ export default function CategoryView({ category: initialCategory, onBack, onProd
       if (user) {
         try {
           const token = localStorage.getItem('insforgeToken');
-          const res = await fetch('http://localhost:5000/api/wishlist', {
+          const res = await fetch(`${API_URL}/api/wishlist`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           const data = await res.json();
@@ -99,7 +100,7 @@ export default function CategoryView({ category: initialCategory, onBack, onProd
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/products');
+        const response = await fetch(`${API_URL}/api/products`);
         const data = await response.json();
         if (response.ok) {
           setAllProducts(data);

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { API_URL } from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Upload, FileCode, CheckCircle, ArrowLeft, Globe, Layers, Box } from 'lucide-react';
 import ModelViewer from './ModelViewer';
@@ -85,7 +86,7 @@ export default function ModelUploadView({ onBack }: ModelUploadViewProps) {
     }));
 
     try {
-      const res = await fetch('http://localhost:5000/api/custom-prints', {
+      const res = await fetch(`${API_URL}/api/custom-prints`, {
         method: 'POST',
         body: submitData
       });

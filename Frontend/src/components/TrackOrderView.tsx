@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_URL } from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Search, Truck, CheckCircle2, Clock, MapPin, AlertCircle } from 'lucide-react';
 
@@ -18,7 +19,7 @@ export default function TrackOrderView({ onBack }: TrackOrderViewProps) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/track/${orderId}`);
+      const res = await fetch(`${API_URL}/api/orders/track/${orderId}`);
       const data = await res.json();
       if (res.ok) {
         setOrderData(data);

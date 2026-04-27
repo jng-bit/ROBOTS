@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import { motion } from 'framer-motion';
 import { ChevronRight, Zap, Battery, Cpu, Radio, Scale, ShieldCheck, Box } from 'lucide-react';
 
@@ -13,7 +14,7 @@ export default function CompareView({ onBack }: CompareViewProps) {
   useEffect(() => {
     const fetchBattle = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/battle');
+        const res = await fetch(`${API_URL}/api/battle`);
         const data = await res.json();
         if (res.ok) setBattle(data);
       } catch (err) {
