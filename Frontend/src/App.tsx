@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
-import Showcase from './components/Showcase';
 import Stats from './components/Stats';
+import VersionBanner from './components/VersionBanner';
 import NeuralArchitecture from './components/NeuralArchitecture';
 import ProductGrid from './components/ProductGrid';
 import Footer from './components/Footer';
@@ -121,7 +121,7 @@ function App() {
             <Hero setCurrentView={setCurrentView} setActiveCategory={setActiveCategory} />
             <Features />
             <TrustSection />
-            <Showcase />
+            <VersionBanner />
             <NeuralArchitecture />
             <Stats />
             <ProductGrid 
