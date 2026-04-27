@@ -14,7 +14,8 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react')) return 'vendor-core';
+            if (id.includes('react-dom')) return 'vendor-dom';
+            if (id.includes('react')) return 'vendor-react';
             if (id.includes('three')) return 'vendor-three';
             if (id.includes('framer-motion')) return 'vendor-animation';
             if (id.includes('lucide-react')) return 'vendor-icons';
