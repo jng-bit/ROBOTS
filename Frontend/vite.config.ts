@@ -14,17 +14,25 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            if (id.includes('three')) return 'vendor-three';
+            if (id.includes('lucide-react')) return 'vendor-icons';
             if (id.includes('react-dom')) return 'vendor-dom';
             if (id.includes('react')) return 'vendor-react';
-            if (id.includes('three')) return 'vendor-three';
             if (id.includes('framer-motion')) return 'vendor-animation';
-            if (id.includes('lucide-react')) return 'vendor-icons';
             if (id.includes('leaflet')) return 'vendor-maps';
-            return 'vendor-libs';
+            
+            const parts = id.split('node_modules/');
+            if (parts.length > 1) {
+              const pathParts = parts[1].split('/');
+              if (pathParts[0].startsWith('@')) {
+                return `vendor-${pathParts[0].replace('@', '')}-${pathParts[1]}`;
+              }
+              return `vendor-${pathParts[0]}`;
+            }
           }
         }
       }
     },
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1000,
   }
-})
+});
