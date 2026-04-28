@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import hpp from 'hpp';
 import connectDB from './src/config/db.js';
 
 // Import Middleware
@@ -42,6 +43,9 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api', limiter);
+
+// Prevent HTTP param pollution
+app.use(hpp());
 
 // Body parser
 app.use(express.json({ limit: '50mb' }));

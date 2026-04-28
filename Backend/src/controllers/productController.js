@@ -1,11 +1,25 @@
 import asyncHandler from 'express-async-handler';
 import Product from '../models/Product.js';
+import NodeCache from 'node-cache';
+
+// Cache for 5 minutes (300 seconds)
+const cache = new NodeCache({ stdTTL: 300 });
 
 // @desc    Get all products
 // @route   GET /api/products
 // @access  Public
 export const getProducts = asyncHandler(async (req, res) => {
+    // Check if products are in cache
+    const cachedProducts = cache.get('allProducts');
+    if (cachedProducts) {
+        return res.json(cachedProducts);
+    }
+
     const products = await Product.find({}).populate('category', 'name');
+    
+    // Set to cache
+    cache.set('allProducts', products);
+    
     res.json(products);
 });
 
@@ -60,6 +74,10 @@ export const createProduct = asyncHandler(async (req, res) => {
     });
 
     const createdProduct = await product.save();
+    
+    // Invalidate cache when a new product is created
+    cache.del('allProducts');
+    
     res.status(201).json(createdProduct);
 });
 
@@ -106,6 +124,10 @@ export const updateProduct = asyncHandler(async (req, res) => {
         product.colors = typeof colors === 'string' ? JSON.parse(colors) : (colors || product.colors);
 
         const updatedProduct = await product.save();
+        
+        // Invalidate cache when a product is updated
+        cache.del('allProducts');
+        
         res.json(updatedProduct);
     } else {
         res.status(404);
@@ -121,6 +143,10 @@ export const deleteProduct = asyncHandler(async (req, res) => {
 
     if (product) {
         await product.deleteOne();
+        
+        // Invalidate cache when a product is deleted
+        cache.del('allProducts');
+        
         res.json({ message: 'Product removed' });
     } else {
         res.status(404);

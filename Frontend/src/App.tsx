@@ -19,7 +19,26 @@ const FAQ = lazy(() => import('./components/FAQ'));
 import SoundEffects from './components/SoundEffects';
 import CustomCursor from './components/CustomCursor';
 import ScrollToTop from './components/ScrollToTop';
+import ReactGA from 'react-ga4';
+import { useLocation } from 'react-router-dom';
 import './index.css';
+
+// Initialize Google Analytics 4
+// Replace 'G-XXXXXXXXXX' with your actual Measurement ID
+ReactGA.initialize('G-6NE8X14MF9');
+
+// Custom hook for tracking page views
+function usePageTracking() {
+  const location = useLocation();
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search });
+  }, [location]);
+}
+
+function RouteTracker({ children }: { children: React.ReactNode }) {
+  usePageTracking();
+  return <>{children}</>;
+}
 
 // Lazy load sub-views
 const CategoryView = lazy(() => import('./components/CategoryView'));
@@ -100,6 +119,7 @@ function App() {
     <ToastProvider>
       <Router>
         <ScrollToTop />
+        <RouteTracker>
         <LazyMotion features={domMax}>
           <div className="relative min-h-screen bg-[var(--bg-primary)] text-[var(--text-main)] selection:bg-primary/30 selection:text-[var(--text-main)] transition-colors duration-400">
             <SoundEffects />
@@ -194,6 +214,7 @@ function App() {
             </Suspense>
           </div>
         </LazyMotion>
+        </RouteTracker>
       </Router>
     </ToastProvider>
   );
