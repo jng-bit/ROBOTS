@@ -15,7 +15,7 @@ export const getProducts = asyncHandler(async (req, res) => {
         return res.json(cachedProducts);
     }
 
-    const products = await Product.find({}).populate('category', 'name');
+    const products = await Product.find({}).populate('category', 'name').lean();
     
     // Set to cache
     cache.set('allProducts', products);

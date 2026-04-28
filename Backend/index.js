@@ -36,6 +36,9 @@ const app = express();
 // Security Headers
 app.use(helmet());
 
+// Trust proxy for Render load balancer (crucial for rate limiting)
+app.set('trust proxy', 1);
+
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
