@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Eye, Truck, Search } from 'lucide-react';
+import { Eye, Truck, Search } from 'lucide-react';
 import { API_URL } from '../../config';
 
 interface User {

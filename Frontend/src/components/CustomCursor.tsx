@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { motion, useSpring } from 'framer-motion';
 
 export default function CustomCursor() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isPointer, setIsPointer] = useState(false);
 
   const springX = useSpring(0, { damping: 25, stiffness: 250 });
