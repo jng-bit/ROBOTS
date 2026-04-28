@@ -330,9 +330,9 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                     className={`flex items-center gap-2 p-1 pr-3 rounded-xl bg-[var(--bg-secondary)]/50 border transition-all active:scale-95 ${isProfileOpen ? 'border-primary' : 'border-[var(--border-subtle)]'}`}
                   >
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center text-white font-bold text-sm shadow-inner overflow-hidden">
-                      {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : user.name?.[0]}
+                      {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : (user.name?.[0] || user.email?.[0]?.toUpperCase() || 'U')}
                     </div>
-                    <span className="hidden md:block text-xs font-bold text-[var(--text-main)]">{user.name?.split(' ')[0]}</span>
+                    <span className="hidden md:block text-xs font-bold text-[var(--text-main)]">{user.name?.split(' ')[0] || user.email?.split('@')[0]}</span>
                   </button>
 
                   <AnimatePresence>
@@ -541,11 +541,11 @@ export default function Navbar({ cartItems, setCartItems, setActiveCategory, set
                     <div className="space-y-3">
                       <div className="flex items-center gap-3 p-4 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-subtle)]">
                         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20 overflow-hidden">
-                          {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : user.name?.[0]}
+                          {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : (user.name?.[0] || user.email?.[0]?.toUpperCase() || 'U')}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-[var(--text-main)]">{user.name}</p>
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase font-black tracking-widest">{user.role}</p>
+                          <p className="text-sm font-bold text-[var(--text-main)]">{user.name || user.email?.split('@')[0]}</p>
+                          <p className="text-[10px] text-[var(--text-muted)] uppercase font-black tracking-widest">{user.role || 'user'}</p>
                         </div>
                       </div>
                       <button 
